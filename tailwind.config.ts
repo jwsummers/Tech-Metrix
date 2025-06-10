@@ -11,6 +11,11 @@ const config: Config = {
   theme: {
   	extend: {
   		colors: {
+			blueAccent: "#1791c8",       // Primary accent (electric blue)
+        tealAccent: "#14B8A6",   // Secondary accent
+        orangeAccent: "#F59E0B", // Tertiary accent
+        pinkAccent: "#EC4899" // Quaternary accent
+  		,
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

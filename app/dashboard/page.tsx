@@ -1,119 +1,146 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Car, Clock, BarChart3, Plus, Loader2, LogOut } from "lucide-react"
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Clock, BarChart3, Plus, Loader2, LogOut } from 'lucide-react';
+import type { RepairOrder } from '@/types';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { supabase } from "@/lib/supabase"
-import { RepairOrderForm } from "@/components/repair-order-form"
-import { RepairOrderList } from "@/components/repair-order-list"
-import { StatsOverview } from "@/components/stats-overview"
-import { WeeklyStats } from "@/components/weekly-stats"
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/lib/supabase';
+import { RepairOrderForm } from '@/components/repair-order-form';
+import { RepairOrderList } from '@/components/repair-order-list';
+import { StatsOverview } from '@/components/stats-overview';
+import { WeeklyStats } from '@/components/weekly-stats';
+
+interface User {
+  id: string;
+  [key: string]: any;
+}
 
 export default function DashboardPage() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState(null)
-  const [repairOrders, setRepairOrders] = useState([])
-  const [showForm, setShowForm] = useState(false)
-  const router = useRouter()
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [repairOrders, setRepairOrders] = useState<RepairOrder[]>([]);
+  const [showForm, setShowForm] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(() => {
     const checkUser = async () => {
       const {
         data: { session },
-      } = await supabase.auth.getSession()
+      } = await supabase.auth.getSession();
 
       if (!session) {
-        router.push("/login")
-        return
+        router.push('/login');
+        return;
       }
 
-      setUser(session.user)
-      fetchRepairOrders(session.user.id)
-    }
+      setUser(session.user as User);
+      fetchRepairOrders(session.user.id);
+    };
 
-    checkUser()
-  }, [router, supabase])
+    checkUser();
+  }, [router]);
 
-  const fetchRepairOrders = async (userId) => {
+  const fetchRepairOrders = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from("repair_orders")
-        .select("*")
-        .eq("technician_id", userId)
-        .order("created_at", { ascending: false })
+        .from('repair_orders')
+        .select('*')
+        .eq('technician_id', userId)
+        .order('created_at', { ascending: false });
 
-      if (error) throw error
+      if (error) throw error;
 
-      setRepairOrders(data || [])
+      setRepairOrders(data as RepairOrder[]);
     } catch (error) {
-      console.error("Error fetching repair orders:", error)
+      console.error('Error fetching repair orders:', error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
-  const handleAddRepairOrder = async (newOrder) => {
+  const handleAddRepairOrder = async (newOrder: RepairOrder) => {
     try {
+      if (!user) return;
+
       const { data, error } = await supabase
-        .from("repair_orders")
+        .from('repair_orders')
         .insert([
           {
             ...newOrder,
             technician_id: user.id,
           },
         ])
-        .select()
+        .select();
 
-      if (error) throw error
+      if (error) throw error;
 
-      setRepairOrders([data[0], ...repairOrders])
-      setShowForm(false)
+      setRepairOrders([data![0], ...repairOrders]);
+      setShowForm(false);
     } catch (error) {
-      console.error("Error adding repair order:", error)
+      console.error('Error adding repair order:', error);
     }
-  }
+  };
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className='flex h-screen items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-blueAccent' />
       </div>
-    )
+    );
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-10 border-b bg-background">
-        <div className="container flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <Car className="h-6 w-6" />
-            <span className="text-xl font-bold">TechMetrix</span>
+    <div className='flex min-h-screen flex-col'>
+      <header className='sticky top-0 z-10 border-b bg-background'>
+        <div className='container flex h-16 items-center justify-between px-4'>
+          <div className='flex items-center gap-2'>
+            <Image src='/TM-logoRB.png' alt='Logo' width={32} height={32} />
+            <span className='text-xl font-bold text-blueAccent'>
+              TechMetrix
+            </span>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleSignOut}>
-            <LogOut className="h-5 w-5" />
-            <span className="sr-only">Sign out</span>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={handleSignOut}
+            className='text-red-500 hover:bg-red-100'
+          >
+            <LogOut className='h-5 w-5' />
+            <span className='sr-only'>Sign out</span>
           </Button>
         </div>
       </header>
-      <main className="flex-1 container px-4 py-6">
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <Button onClick={() => setShowForm(!showForm)}>
+      <main className='flex-1 container px-4 py-6'>
+        <div className='flex flex-col gap-6'>
+          <div className='flex items-center justify-between'>
+            <h1 className='text-3xl font-bold tracking-tight text-blueAccent'>
+              Dashboard
+            </h1>
+            <Button
+              onClick={() => setShowForm(!showForm)}
+              className='bg-blueAccent text-white hover:bg-tealAccent transition'
+            >
               {showForm ? (
-                "Cancel"
+                'Cancel'
               ) : (
                 <>
-                  <Plus className="mr-2 h-4 w-4" />
+                  <Plus className='mr-2 h-4 w-4' />
                   New Repair Order
                 </>
               )}
@@ -121,10 +148,12 @@ export default function DashboardPage() {
           </div>
 
           {showForm && (
-            <Card>
+            <Card className='border-blueAccent/30 shadow-sm'>
               <CardHeader>
                 <CardTitle>Add New Repair Order</CardTitle>
-                <CardDescription>Enter the details of the repair order</CardDescription>
+                <CardDescription>
+                  Enter the details of the repair order
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <RepairOrderForm onSubmit={handleAddRepairOrder} />
@@ -132,100 +161,131 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="repair-orders">Repair Orders</TabsTrigger>
-              <TabsTrigger value="statistics">Statistics</TabsTrigger>
+          <Tabs defaultValue='overview' className='space-y-4'>
+            <TabsList className='bg-blueAccent/10'>
+              <TabsTrigger value='overview'>Overview</TabsTrigger>
+              <TabsTrigger value='repair-orders'>Repair Orders</TabsTrigger>
+              <TabsTrigger value='statistics'>Statistics</TabsTrigger>
             </TabsList>
-            <TabsContent value="overview" className="space-y-4">
+            <TabsContent value='overview' className='space-y-4'>
               <StatsOverview repairOrders={repairOrders} />
-
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
+              <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-7'>
+                <Card className='col-span-4 border-tealAccent/30'>
                   <CardHeader>
                     <CardTitle>Weekly Performance</CardTitle>
                   </CardHeader>
-                  <CardContent className="pl-2">
+                  <CardContent className='pl-2'>
                     <WeeklyStats repairOrders={repairOrders} />
                   </CardContent>
                 </Card>
-                <Card className="col-span-3">
+                <Card className='col-span-3 border-orangeAccent/30'>
                   <CardHeader>
                     <CardTitle>Recent Repair Orders</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <RepairOrderList repairOrders={repairOrders.slice(0, 5)} compact={true} />
+                    <RepairOrderList
+                      repairOrders={repairOrders.slice(0, 5)}
+                      compact={true}
+                    />
                   </CardContent>
                 </Card>
               </div>
             </TabsContent>
-            <TabsContent value="repair-orders" className="space-y-4">
+            <TabsContent value='repair-orders' className='space-y-4'>
               <Card>
                 <CardHeader>
                   <CardTitle>All Repair Orders</CardTitle>
-                  <CardDescription>View and manage all your repair orders</CardDescription>
+                  <CardDescription>
+                    View and manage all your repair orders
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <RepairOrderList repairOrders={repairOrders} compact={false} />
+                  <RepairOrderList
+                    repairOrders={repairOrders}
+                    compact={false}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
-            <TabsContent value="statistics" className="space-y-4">
+            <TabsContent value='statistics' className='space-y-4'>
               <Card>
                 <CardHeader>
                   <CardTitle>Performance Metrics</CardTitle>
-                  <CardDescription>Detailed statistics about your repair orders and efficiency</CardDescription>
+                  <CardDescription>
+                    Detailed statistics about your repair orders and efficiency
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-8">
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <CardContent className='space-y-8'>
+                  <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Repair Orders</CardTitle>
-                        <Car className="h-4 w-4 text-muted-foreground" />
+                      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                        <CardTitle className='text-sm font-medium text-blueAccent'>
+                          Total Repair Orders
+                        </CardTitle>
+                        <Image
+                          src='/TM-logoRB.png'
+                          alt='Logo'
+                          width={18}
+                          height={18}
+                        />
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">{repairOrders.length}</div>
+                        <div className='text-2xl font-bold text-blueAccent'>
+                          {repairOrders.length}
+                        </div>
                       </CardContent>
                     </Card>
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Total Labor Hours</CardTitle>
-                        <Clock className="h-4 w-4 text-muted-foreground" />
+                      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                        <CardTitle className='text-sm font-medium text-orangeAccent'>
+                          Total Labor Hours
+                        </CardTitle>
+                        <Clock className='h-4 w-4 text-orangeAccent' />
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className='text-2xl font-bold text-orangeAccent'>
                           {repairOrders
-                            .reduce((sum, order) => sum + Number.parseFloat(order.labor_hours || 0), 0)
+                            .reduce(
+                              (sum, order) =>
+                                sum + Number(order.labor_hours || 0),
+                              0
+                            )
                             .toFixed(1)}
                         </div>
                       </CardContent>
                     </Card>
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Average Labor Hours</CardTitle>
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                        <CardTitle className='text-sm font-medium text-pinkAccent'>
+                          Average Labor Hours
+                        </CardTitle>
+                        <BarChart3 className='h-4 w-4 text-pinkAccent' />
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">
+                        <div className='text-2xl font-bold text-pinkAccent'>
                           {repairOrders.length
                             ? (
                                 repairOrders.reduce(
-                                  (sum, order) => sum + Number.parseFloat(order.labor_hours || 0),
-                                  0,
+                                  (sum, order) =>
+                                    sum + Number(order.labor_hours || 0),
+                                  0
                                 ) / repairOrders.length
                               ).toFixed(1)
-                            : "0.0"}
+                            : '0.0'}
                         </div>
                       </CardContent>
                     </Card>
                     <Card>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">Efficiency Rate</CardTitle>
-                        <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                      <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+                        <CardTitle className='text-sm font-medium text-tealAccent'>
+                          Efficiency Rate
+                        </CardTitle>
+                        <BarChart3 className='h-4 w-4 text-tealAccent' />
                       </CardHeader>
                       <CardContent>
-                        <div className="text-2xl font-bold">{repairOrders.length ? "95%" : "0%"}</div>
+                        <div className='text-2xl font-bold text-tealAccent'>
+                          {repairOrders.length ? '95%' : '0%'}
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
@@ -238,5 +298,5 @@ export default function DashboardPage() {
         </div>
       </main>
     </div>
-  )
+  );
 }
