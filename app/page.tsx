@@ -7,12 +7,9 @@ export default function LandingPage() {
   return (
     <div className='flex flex-col min-h-screen'>
       <header className='border-b'>
-        <div className='container flex h-16 items-center justify-between px-4 md:px-6'>
+        <div className='container flex h-20 items-center justify-between px-4 md:px-6'>
           <div className='flex items-center gap-2'>
-            <Image src='/TM-logoRB.png' alt='Logo' width={78} height={78} />
-            <span className='text-xl font-bold text-blueAccent'>
-              TechMetrix
-            </span>
+            <Image src='/Logo-fullRB.png' alt='Logo' width={240} height={240} />
           </div>
           <nav className='hidden md:flex gap-6'>
             <Link
@@ -55,9 +52,9 @@ export default function LandingPage() {
                   Track Repair Orders with Precision
                 </h1>
                 <p className='text-gray-600 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed'>
-                  TechMetrix helps automotive technicians track repair orders,
-                  monitor labor hours, and analyze performance metrics to
-                  improve efficiency.
+                  TechTracktion helps automotive technicians track repair
+                  orders, monitor labor hours, and analyze performance metrics
+                  to improve efficiency.
                 </p>
                 <div className='flex flex-col gap-2 min-[400px]:flex-row'>
                   <Link href='/register'>
@@ -183,13 +180,12 @@ export default function LandingPage() {
       </main>
 
       <footer className='border-t'>
-        <div className='container flex flex-col gap-2 py-6 px-4 md:flex-row md:items-center md:justify-between md:px-6'>
-          <div className='flex items-center gap-2 text-blueAccent'>
-            <Car className='h-5 w-5' />
-            <span className='text-lg font-bold'>TechMetrix</span>
+        <div className='container flex flex-col gap-2 py-1 px-4 md:flex-row md:items-center md:justify-between md:px-6'>
+          <div className='flex items-center gap-2'>
+            <Image src='/Logo-fullRB.png' alt='Logo' width={128} height={128} />
           </div>
           <p className='text-xs text-gray-500 hover:text-blueAccent transition-colors duration-200'>
-            © 2024 TechMetrix. All rights reserved.
+            © 2024 TechTracktion. All rights reserved.
           </p>
         </div>
       </footer>

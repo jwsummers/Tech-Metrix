@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { format, startOfDay, subDays, isWithinInterval } from 'date-fns';
-import { Clock, BarChart3, TrendingUp } from 'lucide-react';
+import { Clock, BarChart3, TrendingUp, Car } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { RepairOrder } from '@/types';
@@ -71,7 +71,7 @@ export function StatsOverview({ repairOrders }: StatsOverviewProps) {
           <CardTitle className='text-sm font-medium'>
             Today&apos;s Repair Orders
           </CardTitle>
-          <img src='/TM-logoRB.png' alt='logo' className='h-4 w-4' />
+          <Car className='h-4 w-4 text-blueAccent'></Car>
         </CardHeader>
         <CardContent>
           <div className='text-2xl font-bold'>{stats.todayOrderCount}</div>

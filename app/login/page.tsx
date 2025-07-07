@@ -1,18 +1,17 @@
 'use client';
 
 import type React from 'react';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
-import Image from 'next/image';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -35,7 +34,7 @@ export default function LoginPage() {
 
       toast({
         title: 'Login successful',
-        description: 'Welcome back to TechMetrix!',
+        description: 'Welcome back to TechTracktion!',
       });
 
       router.push('/dashboard');
@@ -55,19 +54,18 @@ export default function LoginPage() {
   return (
     <div className='flex min-h-screen flex-col bg-gradient-to-br from-white via-blueAccent/5 to-tealAccent/10'>
       <div className='flex min-h-screen flex-col items-center justify-center px-4 sm:px-6 lg:px-8'>
-        <div className='w-full max-w-md space-y-6 rounded-lg border border-blueAccent/10 bg-white p-8 shadow-md'>
+        <div className='w-[90%] sm:max-w-md space-y-5 rounded-lg border border-blueAccent/10 bg-white p-8 shadow-md'>
           <div className='flex flex-col items-center space-y-2 text-center'>
             <Link
               href='/'
               className='flex items-center gap-2 text-blueAccent hover:opacity-90 transition'
             >
               <Image
-                src='/TM-logoRB.png'
-                alt='TechMetrix Logo'
-                width={28}
-                height={28}
+                src='/Logo-fullRB-crop.png'
+                alt='TechTracktion Logo'
+                width={160}
+                height={160}
               />
-              <span className='text-2xl font-bold'>TechMetrix</span>
             </Link>
             <h1 className='text-3xl font-bold text-blueAccent'>Welcome back</h1>
             <p className='text-gray-500'>
@@ -75,7 +73,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className='space-y-4'>
+          <form onSubmit={handleLogin} className='space-y-3'>
             <div className='space-y-2'>
               <Label htmlFor='email'>Email</Label>
               <Input
@@ -104,12 +102,16 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className='focus-visible:ring-tealAccent'
+                className='focus-visible:ring-blueAccent'
               />
             </div>
             <Button
               type='submit'
-              className='w-full bg-blueAccent hover:bg-tealAccent transition text-white'
+              className={`w-full text-white transition ${
+                isLoading
+                  ? 'bg-blueAccent/60 cursor-not-allowed'
+                  : 'bg-blueAccent hover:bg-blueAccent/90'
+              }`}
               disabled={isLoading}
             >
               {isLoading ? (
