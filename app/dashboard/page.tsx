@@ -24,7 +24,11 @@ import { Achievements } from '../../components/dashboard/achievements';
 import { WeeklyEfficiencyChart } from '../../components/dashboard/weekly-efficiency-chart';
 
 import { DateTime } from 'luxon';
-import { getStartOfWeekDate, formatDateShort } from '@/lib/dateUtils';
+import {
+  getStartOfWeek,
+  getStartOfWeekDate,
+  formatDateShort,
+} from '@/lib/dateUtils';
 
 interface User {
   id: string;
@@ -37,6 +41,9 @@ export default function DashboardPage() {
   const [repairOrders, setRepairOrders] = useState<RepairOrder[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
   const [workedHoursThisWeek, setWorkedHoursThisWeek] = useState<number>(0);
+  const [dailyWorkedHours, setDailyWorkedHours] = useState<
+    Record<string, number>
+  >({});
   const router = useRouter();
 
   useEffect(() => {
@@ -77,13 +84,14 @@ export default function DashboardPage() {
   };
 
   const fetchWorkedHours = async (userId: string) => {
-    const startOfWeek = getStartOfWeekDate().toISODate();
+    const startOfWeek = getStartOfWeekDate();
+    const startOfWeekString = startOfWeek.toISODate();
 
     const { data, error } = await supabase
       .from('work_logs')
-      .select('worked_hours')
+      .select('date, worked_hours')
       .eq('user_id', userId)
-      .gte('date', startOfWeek);
+      .gte('date', startOfWeekString);
 
     if (error) {
       console.error('Error fetching worked hours:', error);
@@ -96,14 +104,22 @@ export default function DashboardPage() {
       0
     );
 
+    // Convert to a map of date strings
+    const dailyMap: Record<string, number> = {};
+    data?.forEach((log) => {
+      dailyMap[log.date] = log.worked_hours;
+    });
+
     setWorkedHoursThisWeek(total || 0);
+    setDailyWorkedHours(dailyMap);
   };
 
-  const startOfWeek = getStartOfWeekDate().toISODate();
+  const startOfWeek = getStartOfWeek();
+  const endOfWeek = startOfWeek.plus({ days: 7 });
 
   const weeklyRepairOrders = repairOrders.filter((order) => {
-    const orderDate = formatDateShort(order.created_at);
-    return orderDate >= startOfWeek;
+    const orderDate = DateTime.fromISO(order.created_at);
+    return orderDate >= startOfWeek && orderDate < endOfWeek;
   });
 
   const weeklyLaborHours = weeklyRepairOrders.reduce(
@@ -111,9 +127,11 @@ export default function DashboardPage() {
     0
   );
 
+  const start = getStartOfWeek();
   const dailyEfficiencyData = Array.from({ length: 7 }).map((_, index) => {
-    const date = getStartOfWeekDate().plus({ days: index });
+    const date = start.plus({ days: index });
     const dateStr = date.toFormat('yyyy-MM-dd');
+
     const ordersForDay = weeklyRepairOrders.filter(
       (order) => formatDateShort(order.created_at) === dateStr
     );
@@ -121,7 +139,8 @@ export default function DashboardPage() {
       (sum, order) => sum + Number(order.labor_hours || 0),
       0
     );
-    const workedHours = laborHours > 0 ? 8 : 0; // Default 8 hours if any labor done
+
+    const workedHours = dailyWorkedHours[dateStr] || 0;
 
     return {
       day: date.toFormat('ccc'),
@@ -230,7 +249,9 @@ export default function DashboardPage() {
 
             {/* Overview Tab */}
             <TabsContent value='overview' className='space-y-4'>
-              <StatsOverview repairOrders={repairOrders} />
+              {user && (
+                <StatsOverview userId={user.id} repairOrders={repairOrders} />
+              )}
               <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-7'>
                 <Card className='col-span-4 border-tealAccent/30'>
                   <CardHeader>
@@ -330,7 +351,13 @@ export default function DashboardPage() {
                     </Card>
                   </div>
 
-                  <WorkHoursForm />
+                  {user && (
+                    <WorkHoursForm
+                      userId={user.id}
+                      onSave={() => fetchWorkedHours(user.id)}
+                    />
+                  )}
+
                   <Achievements
                     userId={user?.id || ''}
                     totalRepairOrders={weeklyRepairOrders.length}

@@ -1,20 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
 
-interface WorkLog {
-  id?: string;
-  date: string;
-  worked_hours: number;
-  is_day_off: boolean;
+interface WorkHoursFormProps {
+  userId: string;
+  onSave?: () => void;
 }
 
-export function WorkHoursForm() {
+export function WorkHoursForm({ userId, onSave }: WorkHoursFormProps) {
   const [workedHours, setWorkedHours] = useState<number>(8);
   const [isDayOff, setIsDayOff] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -29,7 +27,8 @@ export function WorkHoursForm() {
 
     const { data, error } = await supabase
       .from('work_logs')
-      .select('*')
+      .select('worked_hours, is_day_off')
+      .eq('user_id', userId)
       .eq('date', today)
       .single();
 
@@ -47,6 +46,7 @@ export function WorkHoursForm() {
 
     const { error } = await supabase.from('work_logs').upsert([
       {
+        user_id: userId,
         date: today,
         worked_hours: isDayOff ? 0 : workedHours,
         is_day_off: isDayOff,
@@ -64,6 +64,7 @@ export function WorkHoursForm() {
         title: 'Success',
         description: 'Worked hours updated successfully.',
       });
+      onSave?.(); // refetch after save
     }
 
     setLoading(false);
