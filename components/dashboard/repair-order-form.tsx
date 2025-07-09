@@ -30,7 +30,7 @@ export function RepairOrderForm({ onSubmit }: RepairOrderFormProps) {
     labor_hours: '',
     description: '',
   });
-
+  const [refreshAchievements, setRefreshAchievements] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
@@ -87,6 +87,8 @@ export function RepairOrderForm({ onSubmit }: RepairOrderFormProps) {
     } finally {
       setIsSubmitting(false);
     }
+
+    setRefreshAchievements((prev) => prev + 1);
   };
 
   return (

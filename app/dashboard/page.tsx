@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Clock, Plus, Loader2, LogOut, Car } from 'lucide-react';
 import type { RepairOrder } from '@/types';
+import { checkAndAwardAchievements } from '@/utils/checkAndAwardAchievements';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -40,6 +41,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [repairOrders, setRepairOrders] = useState<RepairOrder[]>([]);
   const [showForm, setShowForm] = useState<boolean>(false);
+  const [refreshAchievements, setRefreshAchievements] = useState(0);
   const [workedHoursThisWeek, setWorkedHoursThisWeek] = useState<number>(0);
   const [dailyWorkedHours, setDailyWorkedHours] = useState<
     Record<string, number>
@@ -372,6 +374,7 @@ export default function DashboardPage() {
                           )
                         : 0
                     }
+                    refreshAchievementsTrigger={refreshAchievements}
                   />
 
                   <WeeklyEfficiencyChart data={dailyEfficiencyData} />
