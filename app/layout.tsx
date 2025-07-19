@@ -7,7 +7,6 @@ export const metadata = {
   title: 'TechTracktion - Enhance Your Efficiency',
   description:
     'Track repair orders, monitor labor hours, and analyze performance metrics',
-  generator: 'v0.dev',
 };
 
 export default function RootLayout({
